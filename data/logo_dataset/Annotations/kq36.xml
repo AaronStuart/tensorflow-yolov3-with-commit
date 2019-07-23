@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>kq36.png</filename>
+	<path>/home/stuart/Documents/image/kq36.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>358</xmin>
+			<ymin>99</ymin>
+			<xmax>590</xmax>
+			<ymax>162</ymax>
+		</bndbox>
+	</object>
+</annotation>

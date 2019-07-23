@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>aixifan.png</filename>
+	<path>/home/stuart/Documents/image/aixifan.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>226</xmin>
+			<ymin>9</ymin>
+			<xmax>334</xmax>
+			<ymax>47</ymax>
+		</bndbox>
+	</object>
+</annotation>

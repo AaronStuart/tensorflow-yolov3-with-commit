@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>xiami.png</filename>
+	<path>C:\Users\JessieS\Desktop\zjz\image\xiami.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>178</xmin>
+			<ymin>19</ymin>
+			<xmax>317</xmax>
+			<ymax>67</ymax>
+		</bndbox>
+	</object>
+</annotation>

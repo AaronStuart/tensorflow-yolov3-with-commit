@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>chinahr.png</filename>
+	<path>/home/stuart/Documents/image/chinahr.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>811</xmin>
+			<ymin>170</ymin>
+			<xmax>998</xmax>
+			<ymax>236</ymax>
+		</bndbox>
+	</object>
+</annotation>

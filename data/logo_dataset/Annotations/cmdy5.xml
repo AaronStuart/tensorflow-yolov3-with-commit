@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>cmdy5.png</filename>
+	<path>/home/stuart/Documents/image/cmdy5.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>209</xmin>
+			<ymin>6</ymin>
+			<xmax>400</xmax>
+			<ymax>60</ymax>
+		</bndbox>
+	</object>
+</annotation>

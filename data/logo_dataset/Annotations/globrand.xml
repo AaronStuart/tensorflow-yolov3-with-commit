@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>globrand.png</filename>
+	<path>/home/stuart/Documents/image/globrand.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>201</xmin>
+			<ymin>85</ymin>
+			<xmax>487</xmax>
+			<ymax>166</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>zaixian-fanyi.png</filename>
+	<path>C:\Users\JessieS\Desktop\zjz\image\zaixian-fanyi.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>10</xmin>
+			<ymin>130</ymin>
+			<xmax>317</xmax>
+			<ymax>235</ymax>
+		</bndbox>
+	</object>
+</annotation>

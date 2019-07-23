@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>36mh.png</filename>
+	<path>/home/stuart/Documents/image/36mh.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>335</xmin>
+			<ymin>41</ymin>
+			<xmax>565</xmax>
+			<ymax>107</ymax>
+		</bndbox>
+	</object>
+</annotation>

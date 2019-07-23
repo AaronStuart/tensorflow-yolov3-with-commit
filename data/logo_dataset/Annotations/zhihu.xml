@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>zhihu.png</filename>
+	<path>C:\Users\JessieS\Desktop\zjz\image\zhihu.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>958</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>862</xmin>
+			<ymin>131</ymin>
+			<xmax>1038</xmax>
+			<ymax>217</ymax>
+		</bndbox>
+	</object>
+</annotation>

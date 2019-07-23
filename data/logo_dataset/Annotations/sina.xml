@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>sina.png</filename>
+	<path>C:\Users\JessieS\Desktop\zjz\image\sina.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>logo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>345</xmin>
+			<ymin>69</ymin>
+			<xmax>485</xmax>
+			<ymax>135</ymax>
+		</bndbox>
+	</object>
+</annotation>
