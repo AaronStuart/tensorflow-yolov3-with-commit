@@ -100,8 +100,8 @@ class YOLOV3(object):
 
 
     def decode(self, conv_output, anchors, stride):
-        """Map predictions to the original image size
-        
+        """
+        The dimension of the decode result is the same as the conv_output, but the value of xywh, conf and prob is mapped.
         return tensor of shape [batch_size, output_size, output_size, anchor_per_scale, 5 + num_classes]
                contains (x, y, w, h, score, probability)
         """
