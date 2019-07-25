@@ -224,9 +224,9 @@ class Dataset(object):
             exist_positive = False
             # generate gt for different size feature map, only positive anchores have label, else set to 0
             for i in range(3):
-                # init all anchors at a location
+                # create anchors
                 anchors_xywh = np.zeros((self.anchor_per_scale, 4))
-                # 0.5 means all anchors locate at grid cell center
+                # Initialize the anchor in the same grid cell as GT bbox
                 anchors_xywh[:, 0:2] = np.floor(bbox_xywh_scaled[i, 0:2]).astype(np.int32) + 0.5
                 # assign different anchor size to different anchor
                 anchors_xywh[:, 2:4] = self.anchors[i]
