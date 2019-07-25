@@ -61,7 +61,7 @@ class YOLOV3(object):
         input_data = common.convolutional(input_data, (1, 1, 1024,  512), self.trainable, 'conv56')
 
         conv_lobj_branch = common.convolutional(input_data, (3, 3, 512, 1024), self.trainable, name='conv_lobj_branch')
-        conv_lbbox = common.convolutional(conv_lobj_branch, (1, 1, 1024, 3*(self.num_class + 5)),
+        conv_lbbox = common.convolutional(conv_lobj_branch, (1, 1, 1024, self.anchor_per_scale*(self.num_class + 5)),
                                           trainable=self.trainable, name='conv_lbbox', activate=False, bn=False)
 
         input_data = common.convolutional(input_data, (1, 1,  512,  256), self.trainable, 'conv57')
@@ -77,7 +77,7 @@ class YOLOV3(object):
         input_data = common.convolutional(input_data, (1, 1, 512, 256), self.trainable, 'conv62')
 
         conv_mobj_branch = common.convolutional(input_data, (3, 3, 256, 512),  self.trainable, name='conv_mobj_branch' )
-        conv_mbbox = common.convolutional(conv_mobj_branch, (1, 1, 512, 3*(self.num_class + 5)),
+        conv_mbbox = common.convolutional(conv_mobj_branch, (1, 1, 512, self.anchor_per_scale*(self.num_class + 5)),
                                           trainable=self.trainable, name='conv_mbbox', activate=False, bn=False)
 
         input_data = common.convolutional(input_data, (1, 1, 256, 128), self.trainable, 'conv63')
@@ -93,16 +93,15 @@ class YOLOV3(object):
         input_data = common.convolutional(input_data, (1, 1, 256, 128), self.trainable, 'conv68')
 
         conv_sobj_branch = common.convolutional(input_data, (3, 3, 128, 256), self.trainable, name='conv_sobj_branch')
-        conv_sbbox = common.convolutional(conv_sobj_branch, (1, 1, 256, 3*(self.num_class + 5)),
+        conv_sbbox = common.convolutional(conv_sobj_branch, (1, 1, 256, self.anchor_per_scale*(self.num_class + 5)),
                                           trainable=self.trainable, name='conv_sbbox', activate=False, bn=False)
 
         return conv_lbbox, conv_mbbox, conv_sbbox
 
 
     def decode(self, conv_output, anchors, stride):
-        """
-        the difference between conv_bbox and pred_bbox:
-            conv_lbbox based on feature map, pred_lbbox based on origin image
+        """Map predictions to the original image size
+        
         return tensor of shape [batch_size, output_size, output_size, anchor_per_scale, 5 + num_classes]
                contains (x, y, w, h, score, probability)
         """
@@ -127,9 +126,9 @@ class YOLOV3(object):
         xy_grid = tf.tile(xy_grid[tf.newaxis, :, :, tf.newaxis, :], [batch_size, 1, 1, anchor_per_scale, 1])
         xy_grid = tf.cast(xy_grid, tf.float32)
 
-        # map xy to origin size
+        # Map conv_raw_dxdy to fall within the grid cell, then map xy to origin image size
         pred_xy = (tf.sigmoid(conv_raw_dxdy) + xy_grid) * stride
-        # map wh
+        # Map conv_raw_dwdh to a multiple of anchors, then map wh to origin image size
         pred_wh = (tf.exp(conv_raw_dwdh) * anchors) * stride
         pred_xywh = tf.concat([pred_xy, pred_wh], axis=-1)
 
@@ -149,7 +148,7 @@ class YOLOV3(object):
                             boxes1[..., :2] + boxes1[..., 2:] * 0.5], axis=-1)
         boxes2 = tf.concat([boxes2[..., :2] - boxes2[..., 2:] * 0.5,
                             boxes2[..., :2] + boxes2[..., 2:] * 0.5], axis=-1)
-        # sort to let x1 < x2, y1 < y2
+        # adjust to let x1 < x2, y1 < y2
         boxes1 = tf.concat([tf.minimum(boxes1[..., :2], boxes1[..., 2:]),
                             tf.maximum(boxes1[..., :2], boxes1[..., 2:])], axis=-1)
         boxes2 = tf.concat([tf.minimum(boxes2[..., :2], boxes2[..., 2:]),
@@ -214,30 +213,36 @@ class YOLOV3(object):
         pred_xywh     = pred[:, :, :, :, 0:4]
         pred_conf     = pred[:, :, :, :, 4:5]
 
+        # Only the value of the positive anchors in the label is not 0
         label_xywh    = label[:, :, :, :, 0:4]
         label_conf    = label[:, :, :, :, 4:5]
         label_prob    = label[:, :, :, :, 5:]
-
+        
         giou = tf.expand_dims(self.bbox_giou(pred_xywh, label_xywh), axis=-1)
         input_size = tf.cast(input_size, tf.float32)
-        # adjust by bbox area / image area, smaller bbox has larger weight
+        # Adjust the weight according to the ratio of GT bbox and image size. The smaller the bbox, the higher the weight.
         bbox_loss_scale = 2.0 - 1.0 * label_xywh[:, :, :, :, 2:3] * label_xywh[:, :, :, :, 3:4] / (input_size ** 2)
+        
         # only calculate giou_loss of positive anchors
         giou_loss = label_conf * bbox_loss_scale * (1- giou)
 
         iou = self.bbox_iou(pred_xywh[:, :, :, :, np.newaxis, :], bboxes[:, np.newaxis, np.newaxis, np.newaxis, :, :])
         max_iou = tf.expand_dims(tf.reduce_max(iou, axis=-1), axis=-1)
 
+        # Filter negative anchors with IoU less than the threshold from the non-positive anchor
         respond_bgd = (1.0 - label_conf) * tf.cast(max_iou < self.iou_loss_thresh, tf.float32)
 
+        # Focal loss factor
         conf_focal = self.focal(label_conf, pred_conf)
 
+        # Only calculate conf loss of positive anchors and negative anchors, others ignore
         conf_loss = conf_focal * (
                 label_conf * tf.nn.sigmoid_cross_entropy_with_logits(labels=label_conf, logits=conv_raw_conf)
                 +
                 respond_bgd * tf.nn.sigmoid_cross_entropy_with_logits(labels=label_conf, logits=conv_raw_conf)
         )
 
+        # Only calculate prob loss of positive anchors, others ignore
         prob_loss = label_conf * tf.nn.sigmoid_cross_entropy_with_logits(labels=label_prob, logits=conv_raw_prob)
 
         giou_loss = tf.reduce_mean(tf.reduce_sum(giou_loss, axis=[1,2,3,4]))
