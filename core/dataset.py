@@ -33,8 +33,10 @@ class Dataset(object):
         self.strides = np.array(cfg.YOLO.STRIDES)
         self.classes = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes = len(self.classes)
+        # The size of the anchor is relative to the downsampled featuremap, not origin image
         self.anchors = np.array(utils.get_anchors(cfg.YOLO.ANCHORS))
         self.anchor_per_scale = cfg.YOLO.ANCHOR_PER_SCALE
+        # In an image, only up to 150 GT bboxes can be saved per scale.
         self.max_bbox_per_scale = 150
 
         self.annotations = self.load_annotations(dataset_type)
@@ -56,21 +58,22 @@ class Dataset(object):
     def __next__(self):
 
         with tf.device('/cpu:0'):
-            # random choose one input size
+            # Randomly select one input size for multi-scale training
             self.train_input_size = random.choice(self.train_input_sizes)
-            # calculate output size by three downsample strides
+            # Calculate the featuremap size based on the downsampling stride
             self.train_output_sizes = self.train_input_size // self.strides
 
             batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size, 3))
 
-            # larger feature map has smaller downsample stride, correspond to smaller bbox, 3 anchors per pixel, 4 + conf + prob parameters per anchor
+            # The larger the downsampling stride, the smaller the featuremap size, the larger the receptive field, the more suitable for detecting large objects.
             batch_label_sbbox = np.zeros((self.batch_size, self.train_output_sizes[0], self.train_output_sizes[0],
                                           self.anchor_per_scale, 5 + self.num_classes))
             batch_label_mbbox = np.zeros((self.batch_size, self.train_output_sizes[1], self.train_output_sizes[1],
                                           self.anchor_per_scale, 5 + self.num_classes))
             batch_label_lbbox = np.zeros((self.batch_size, self.train_output_sizes[2], self.train_output_sizes[2],
                                           self.anchor_per_scale, 5 + self.num_classes))
-
+            
+            # For an image, only a fixed number of GT bboxes will be reserved for each scale
             batch_sbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4))
             batch_mbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4))
             batch_lbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4))
@@ -82,13 +85,11 @@ class Dataset(object):
                     if index >= self.num_samples: index -= self.num_samples
                     annotation = self.annotations[index]
                     image, bboxes = self.parse_annotation(annotation)
-                    """
-                    the difference between label_sbbox and sbboxes:
-                        label_sbbox : [feauremap_size, feauremap_size, anchor_num, 4 + conf + num_classes]
-                        sbboxes : [max_bbox_per_scale, 4]
-                    """
+                    
+                    # Generate label according to GT bbox
                     label_sbbox, label_mbbox, label_lbbox, sbboxes, mbboxes, lbboxes = self.preprocess_true_boxes(bboxes)
-
+                    
+                    # Fill batch label
                     batch_image[num, :, :, :] = image
                     batch_label_sbbox[num, :, :, :, :] = label_sbbox
                     batch_label_mbbox[num, :, :, :, :] = label_mbbox
