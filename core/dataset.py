@@ -215,49 +215,49 @@ class Dataset(object):
             uniform_distribution = np.full(self.num_classes, 1.0 / self.num_classes)
             deta = 0.01
             smooth_onehot = onehot * (1 - deta) + deta * uniform_distribution
-            # convert to xywh format
+            # convert GT bbox to xywh format
             bbox_xywh = np.concatenate([(bbox_coor[2:] + bbox_coor[:2]) * 0.5, bbox_coor[2:] - bbox_coor[:2]], axis=-1)
-            # downsample bboxes
+            # Downsample GT bbox to featuremap size
             bbox_xywh_scaled = 1.0 * bbox_xywh[np.newaxis, :] / self.strides[:, np.newaxis]
-
+            
             iou = []
             exist_positive = False
             # generate gt for different size feature map, only positive anchores have label, else set to 0
             for i in range(3):
-                # create anchors
+                # Create anchors in the same grid cell as GT bbox
                 anchors_xywh = np.zeros((self.anchor_per_scale, 4))
-                # Initialize the anchor in the same grid cell as GT bbox
                 anchors_xywh[:, 0:2] = np.floor(bbox_xywh_scaled[i, 0:2]).astype(np.int32) + 0.5
-                # assign different anchor size to different anchor
                 anchors_xywh[:, 2:4] = self.anchors[i]
-
+                
+                # Calculate the IoU of anchors and GT bbox
                 iou_scale = self.bbox_iou(bbox_xywh_scaled[i][np.newaxis, :], anchors_xywh)
                 iou.append(iou_scale)
-                # positive anchor satisfy iou > 0.3
+                # Only set the labels of positive anchors
                 iou_mask = iou_scale > 0.3
-                # np.any Test whether any array element evaluates to True
+                # if any array element evaluates to True
                 if np.any(iou_mask):
-                    # cast xy to integer
+                    # Get the position of the GT bbox on the featuremap
                     xind, yind = np.floor(bbox_xywh_scaled[i, 0:2]).astype(np.int32)
 
-                    # initial to 0
+                    # set positive anchors
                     label[i][yind, xind, iou_mask, :] = 0
-                    # fill with bbox
                     label[i][yind, xind, iou_mask, 0:4] = bbox_xywh
-                    # positive anchors' conf set to 1, else is 0
                     label[i][yind, xind, iou_mask, 4:5] = 1.0
-                    # classes prob set to smooth_onehot
                     label[i][yind, xind, iou_mask, 5:] = smooth_onehot
 
+                    # The featuremap for each scale retains only a fixed number of GT bboxes, and the extra ones will cover the front
                     bbox_ind = int(bbox_count[i] % self.max_bbox_per_scale)
                     bboxes_xywh[i][bbox_ind, :4] = bbox_xywh
                     bbox_count[i] += 1
 
                     exist_positive = True
 
+            # If there is no positive anchor, choose the largest IoU as the best anchor.
             if not exist_positive:
                 best_anchor_ind = np.argmax(np.array(iou).reshape(-1), axis=-1)
+                # best_detect indicates the corresponding scale
                 best_detect = int(best_anchor_ind / self.anchor_per_scale)
+                # best_anchor indicates the corresponding anchor
                 best_anchor = int(best_anchor_ind % self.anchor_per_scale)
                 xind, yind = np.floor(bbox_xywh_scaled[best_detect, 0:2]).astype(np.int32)
 
