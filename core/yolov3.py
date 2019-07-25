@@ -232,7 +232,7 @@ class YOLOV3(object):
         # Filter negative anchors with IoU less than the threshold from the non-positive anchor
         respond_bgd = (1.0 - label_conf) * tf.cast(max_iou < self.iou_loss_thresh, tf.float32)
 
-        # Focal loss factor
+        # Focal loss coefficient, the smaller the difference, the smaller the coefficient
         conf_focal = self.focal(label_conf, pred_conf)
 
         # Only calculate conf loss of positive anchors and negative anchors, others ignore
