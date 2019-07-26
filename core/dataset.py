@@ -33,7 +33,7 @@ class Dataset(object):
         self.strides = np.array(cfg.YOLO.STRIDES)
         self.classes = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes = len(self.classes)
-        # The size of the anchor is relative to the downsampled featuremap, not origin image
+        # When calculating IoU, the scale of the anchor should correspond to the scale of the GT, that is, both after downsampling or before downsampling.
         self.anchors = np.array(utils.get_anchors(cfg.YOLO.ANCHORS))
         self.anchor_per_scale = cfg.YOLO.ANCHOR_PER_SCALE
         # In an image, only up to 150 GT bboxes can be saved per scale.
@@ -200,7 +200,7 @@ class Dataset(object):
         return inter_area / union_area
 
     def preprocess_true_boxes(self, bboxes):
-        # create label for three scale feature map
+        # Initialize the anchor label for the three size featuremaps
         label = [np.zeros((self.train_output_sizes[i], self.train_output_sizes[i], self.anchor_per_scale,
                            5 + self.num_classes)) for i in range(3)]
         bboxes_xywh = [np.zeros((self.max_bbox_per_scale, 4)) for _ in range(3)]
@@ -223,14 +223,16 @@ class Dataset(object):
             
             iou = []
             exist_positive = False
-            # generate gt for different size feature map, only positive anchores have label, else set to 0
+
             for i in range(3):
                 # Create anchors in the same grid cell as GT bbox
                 anchors_xywh = np.zeros((self.anchor_per_scale, 4))
+                # Anchor is located in the center of the grid cell where the GT falls
                 anchors_xywh[:, 0:2] = np.floor(bbox_xywh_scaled[i, 0:2]).astype(np.int32) + 0.5
-                anchors_xywh[:, 2:4] = self.anchors[i]
+                # Downsampling the predefined anchors
+                anchors_xywh[:, 2:4] = self.anchors[i] / self.strides[i]
                 
-                # Calculate the IoU of anchors and GT bbox
+                # Anchor and GT should be both after downsampling or before downsampling
                 iou_scale = self.bbox_iou(bbox_xywh_scaled[i][np.newaxis, :], anchors_xywh)
                 iou.append(iou_scale)
                 # Only set the labels of positive anchors
@@ -240,7 +242,7 @@ class Dataset(object):
                     # Get the position of the GT bbox on the featuremap
                     xind, yind = np.floor(bbox_xywh_scaled[i, 0:2]).astype(np.int32)
 
-                    # set positive anchors
+                    # Fill positive anchors
                     label[i][yind, xind, iou_mask, :] = 0
                     label[i][yind, xind, iou_mask, 0:4] = bbox_xywh
                     label[i][yind, xind, iou_mask, 4:5] = 1.0
