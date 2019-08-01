@@ -15,7 +15,7 @@ import tensorflow as tf
 
 
 def convolutional(input_data, filters_shape, trainable, name, downsample=False, activate=True, bn=True):
-    # filters_shape : [height_stride, width_stride, input_channel, output_channel]
+    # filters_shape : [filter_height, filter_width, input_channel, output_channel]
     
     with tf.variable_scope(name):
         if downsample:
