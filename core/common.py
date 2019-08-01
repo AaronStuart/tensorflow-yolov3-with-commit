@@ -15,7 +15,8 @@ import tensorflow as tf
 
 
 def convolutional(input_data, filters_shape, trainable, name, downsample=False, activate=True, bn=True):
-
+    # filters_shape : [height_stride, width_stride, input_channel, output_channel]
+    
     with tf.variable_scope(name):
         if downsample:
             pad_h, pad_w = (filters_shape[0] - 2) // 2 + 1, (filters_shape[1] - 2) // 2 + 1
