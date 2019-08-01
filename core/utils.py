@@ -36,7 +36,7 @@ def get_anchors(anchors_path):
 
 
 def image_preporcess(image, target_size, gt_boxes=None):
-
+    # Opencv reads images in BGR mode, but tensorflow processes images in RGB mode
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
 
     ih, iw    = target_size
