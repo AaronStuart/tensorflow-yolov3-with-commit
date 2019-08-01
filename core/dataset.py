@@ -29,12 +29,15 @@ class Dataset(object):
         self.batch_size  = cfg.TRAIN.BATCH_SIZE if dataset_type == 'train' else cfg.TEST.BATCH_SIZE
         self.data_aug    = cfg.TRAIN.DATA_AUG   if dataset_type == 'train' else cfg.TEST.DATA_AUG
 
+        # Multi-scale training
         self.train_input_sizes = cfg.TRAIN.INPUT_SIZE
+        # Three downsampling strides, corresponding to three prediction branches
         self.strides = np.array(cfg.YOLO.STRIDES)
         self.classes = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes = len(self.classes)
         # When calculating IoU, the scale of the anchor should correspond to the scale of the GT, that is, both after downsampling or before downsampling.
         self.anchors = np.array(utils.get_anchors(cfg.YOLO.ANCHORS))
+        # Three anchors for each location
         self.anchor_per_scale = cfg.YOLO.ANCHOR_PER_SCALE
         # In an image, only up to 150 GT bboxes can be saved per scale.
         self.max_bbox_per_scale = 150
@@ -60,11 +63,12 @@ class Dataset(object):
         with tf.device('/cpu:0'):
             # Randomly select one input size for multi-scale training
             self.train_input_size = random.choice(self.train_input_sizes)
-            # Calculate the featuremap size based on the downsampling stride
+            # Calculate three featuremaps' size based on three downsampling stride
             self.train_output_sizes = self.train_input_size // self.strides
 
             batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size, 3))
 
+            # Label of three prediction branches
             # The larger the downsampling stride, the smaller the featuremap size, the larger the receptive field, the more suitable for detecting large objects.
             batch_label_sbbox = np.zeros((self.batch_size, self.train_output_sizes[0], self.train_output_sizes[0],
                                           self.anchor_per_scale, 5 + self.num_classes))
