@@ -125,18 +125,24 @@ class Dataset(object):
             h, w, _ = image.shape
             max_bbox = np.concatenate([np.min(bboxes[:, 0:2], axis=0), np.max(bboxes[:, 2:4], axis=0)], axis=-1)
 
+            # Left border width
             max_l_trans = max_bbox[0]
+            # Upper border width
             max_u_trans = max_bbox[1]
+            # Right border width
             max_r_trans = w - max_bbox[2]
+            # Down border width
             max_d_trans = h - max_bbox[3]
 
+            # The cropped area exceeds the max_bbox with random margins
             crop_xmin = max(0, int(max_bbox[0] - random.uniform(0, max_l_trans)))
             crop_ymin = max(0, int(max_bbox[1] - random.uniform(0, max_u_trans)))
-            crop_xmax = max(w, int(max_bbox[2] + random.uniform(0, max_r_trans)))
-            crop_ymax = max(h, int(max_bbox[3] + random.uniform(0, max_d_trans)))
+            crop_xmax = min(w, int(max_bbox[2] + random.uniform(0, max_r_trans)))
+            crop_ymax = min(h, int(max_bbox[3] + random.uniform(0, max_d_trans)))
 
             image = image[crop_ymin : crop_ymax, crop_xmin : crop_xmax]
 
+            # Modify bbox coordinates
             bboxes[:, [0, 2]] = bboxes[:, [0, 2]] - crop_xmin
             bboxes[:, [1, 3]] = bboxes[:, [1, 3]] - crop_ymin
 
