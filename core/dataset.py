@@ -123,6 +123,7 @@ class Dataset(object):
 
         if random.random() < 0.5:
             h, w, _ = image.shape
+            # Minimum external bbox containing all bboxes
             max_bbox = np.concatenate([np.min(bboxes[:, 0:2], axis=0), np.max(bboxes[:, 2:4], axis=0)], axis=-1)
 
             # Left border width
